@@ -655,6 +655,27 @@ class ExtensionHelper
     }
 
     /**
+     * Get Livewire component info for a service view (if the extension supports it).
+     * Returns ['component' => string, 'params' => array] or null if not supported.
+     */
+    public static function getComponentInfo(Service $service, $view)
+    {
+        $server = self::checkServer($service, 'getComponentInfo');
+        $extension = self::getExtension('server', $server->extension, $server->settings);
+
+        if (!method_exists($extension, 'getComponentInfo')) {
+            return null;
+        }
+
+        return $extension->getComponentInfo(
+            $service,
+            self::settingsToArray($service->product->settings),
+            self::getServiceProperties($service),
+            $view['name']
+        );
+    }
+
+    /**
      * Get actions for service
      */
     public static function getView(Service $service, $view)

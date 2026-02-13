@@ -145,7 +145,19 @@ class Show extends Component
                 if (!$currentViewObj) {
                     throw new Exception('View not found');
                 }
-                $view = ExtensionHelper::getView($this->service, $currentViewObj);
+                // Try getComponentInfo() first — renders as a real @livewire child
+                // with proper lifecycle. Falls back to getView() (raw HTML injection).
+                try {
+                    $componentInfo = ExtensionHelper::getComponentInfo($this->service, $currentViewObj);
+                } catch (Exception $e) {
+                    $componentInfo = null;
+                }
+
+                if ($componentInfo) {
+                    $view = ['component' => $componentInfo];
+                } else {
+                    $view = ['html' => ExtensionHelper::getView($this->service, $currentViewObj)];
+                }
             } catch (Exception $e) {
                 if ($previousView !== $this->views[0]['name'] ?? null) {
                     $this->notify('Got an error while trying to load the view', 'error');
@@ -154,7 +166,10 @@ class Show extends Component
             }
         }
 
-        return view('services.show', ['extensionView' => $view])->layoutData([
+        return view('services.show', [
+            'extensionComponent' => $view['component'] ?? null,
+            'extensionView' => $view['html'] ?? null,
+        ])->layoutData([
             'title' => 'Services',
             'sidebar' => true,
         ]);

@@ -142,7 +142,11 @@
         <!-- show loading spinner -->
         <x-loading target="changeView" />
         <div wire:loading.remove wire:target="changeView">
-            {!! $extensionView !!}
+            @if($extensionComponent)
+                @livewire($extensionComponent['component'], $extensionComponent['params'] ?? [], key($currentView))
+            @elseif($extensionView)
+                {!! $extensionView !!}
+            @endif
         </div>
     </div>
     @endif
